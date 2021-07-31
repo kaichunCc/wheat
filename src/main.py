@@ -103,10 +103,11 @@ def trans_line2Insertsql(line):
 			before = column
 			column = remove_illegal_char(column)		
 			sql = sql + '\'' + column + '\''
-
-			print("idx %d : %s  %s" % (idx, before, column))
+			#print("idx %d : %s   %s" % (idx, before, column))
 			
 			idx += 1
+	#print(idx)
+
 	return sql
 
 def create_table(tbl_name, raw_file, cursor):
@@ -125,7 +126,6 @@ def create_table(tbl_name, raw_file, cursor):
 
 	drop_table_if_exists = "DROP TABLE IF EXISTS " + tbl_name
 	cursor.execute(drop_table_if_exists)
-	#print(create_sql)
 	cursor.execute(create_sql)
 
 def insert_data(tbl_name, raw_file, cursor):
@@ -146,8 +146,6 @@ def insert_data(tbl_name, raw_file, cursor):
 		else:
 			line = trans_line2Insertsql(line)
 			
-			print(line)
-			print("\r\n")
 			insert_sql = insert_sql_base + line + ")"
 			if 0:
 				print(insert_sql)
@@ -162,7 +160,7 @@ def insert_data(tbl_name, raw_file, cursor):
 			except:
 				db.rollback()
 			'''
-			break
+			#break
 	fd.close()
 
 	#print(table_columns_name)

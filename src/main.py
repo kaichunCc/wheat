@@ -16,6 +16,9 @@ def connect_db():
 	db = pymysql.connect(host="localhost", port=3306, user="root", passwd="admin", db="tdx")
 	cursor = db.cursor()
 
+def disconnect_db():
+	db.close()
+
 def test_pymysql():
 	db = pymysql.connect(host="localhost", port=3306, user="root", passwd="admin", db="tdx")
 	cursor = db.cursor()
@@ -55,7 +58,6 @@ def remove_illegal_char(input):
 			continue
 		else:
 			out += c
-	
 	return out
 
 table_columns_name = NULL
@@ -155,10 +157,15 @@ def insert_data(tbl_name, raw_file, cursor):
 			#break
 	fd.close()
 
-	#print(table_columns_name)
-
-if __name__ == "__main__":
+def import_hsag_data():
 	connect_db()
+
+	# hsag mains 沪深A股
 	create_table("hsag", raw_file, cursor)
 	insert_data("hsag", raw_file, cursor)
-	db.close()
+
+	disconnect_db()
+
+if __name__ == "__main__":
+	#print("hi")
+	import_hsag_data()

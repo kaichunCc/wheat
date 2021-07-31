@@ -34,7 +34,6 @@ def read_file(raw_file):
 		line = fd.readline()
 		cnt += 1
 		
-
 	columns = line.split("\t")
 
 	index = 1
@@ -60,11 +59,14 @@ def remove_illegal_char(input):
 	return out
 
 table_columns_name = NULL
+value_format = NULL
 def trans_line2Createsql(line):
 	global table_columns_name
+	global value_format
 
 	sql = ""
 	table_columns_name = ""
+	value_format = ""
 
 	columns = line.split("\t")
 	idx = 0
@@ -73,17 +75,20 @@ def trans_line2Createsql(line):
 			if idx != 0:
 				sql += ","
 				table_columns_name += ','
+				value_format += ','
 
 			column = remove_illegal_char(column)		
 			sql += column
-			sql += " CHAR(50)"
+			#sql += " VARCHAR(50)"
+			#sql += " TINYBLOB"
+			sql += " text"
 			
-			table_columns_name += column
+			table_columns_name = table_columns_name + '\'' + column + '\''
+			value_format += '%s'
 
 			if idx == 0:
 				sql += " NOT NULL"
 			idx += 1
-
 	return sql
 
 def trans_line2Insertsql(line):
@@ -92,14 +97,16 @@ def trans_line2Insertsql(line):
 	columns = line.split("\t")
 	idx = 0
 	for column in columns:
-		if len(column) > 1 :
+		if len(column) >= 1 and column != '\n':
 			if idx != 0:
 				sql += ","
-
+			before = column
 			column = remove_illegal_char(column)		
-			sql += column
-			idx += 1
+			sql = sql + '\'' + column + '\''
 
+			print("idx %d : %s  %s" % (idx, before, column))
+			
+			idx += 1
 	return sql
 
 def create_table(tbl_name, raw_file, cursor):
@@ -113,7 +120,8 @@ def create_table(tbl_name, raw_file, cursor):
 	line = trans_line2Createsql(line)
 	
 	create_sql += line
-	create_sql += ")"
+	create_sql += ")" 
+	create_sql += "ENGINE=InnoDB DEFAULT CHARSET=utf8"
 
 	drop_table_if_exists = "DROP TABLE IF EXISTS " + tbl_name
 	cursor.execute(drop_table_if_exists)
@@ -124,7 +132,9 @@ def insert_data(tbl_name, raw_file, cursor):
 	global table_columns_name
 
 	insert_sql_base = "INSERT INTO"
-	insert_sql_base += " " + tbl_name + "(" + table_columns_name + ") " + "VALUES " + " ("
+	#insert_sql_base += " " + tbl_name + "(" + table_columns_name + ") " + "VALUES " + " (" + value_format + ')' + ' % ' + '('
+	#insert_sql_base += " " + tbl_name + "(" + table_columns_name + ") " + "VALUES " + " ("
+	insert_sql_base += " " + tbl_name + " VALUES " + " ("
 
 	fd = open(file=raw_file, mode='r')
 	fd.readline()
@@ -135,11 +145,16 @@ def insert_data(tbl_name, raw_file, cursor):
 			break
 		else:
 			line = trans_line2Insertsql(line)
-			insert_sql = insert_sql_base + line + ")"
-			print(insert_sql)
 			
-			cursor.execute(insert_sql)
-			db.commit()
+			print(line)
+			print("\r\n")
+			insert_sql = insert_sql_base + line + ")"
+			if 0:
+				print(insert_sql)
+			else:
+				cursor.execute(insert_sql)
+				db.commit()
+
 			'''
 			try :
 				cursor.execute(insert_sql)

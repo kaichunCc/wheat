@@ -92,22 +92,14 @@ def trans_line2Createsql(line):
 	return sql
 
 def trans_line2Insertsql(line):
+	line = line.replace('\t', "\",\"")
+	line = "\"" + line[:-3]
+
 	sql = ""
-
-	columns = line.split("\t")
-	idx = 0
-	for column in columns:
-		if len(column) >= 1 and column != '\n':
-			if idx != 0:
-				sql += ","
-			before = column
-			column = remove_illegal_char(column)		
-			sql = sql + '\'' + column + '\''
-			#print("idx %d : %s   %s" % (idx, before, column))
+	for c in line:
+		if c != " ":
+			sql += c
 			
-			idx += 1
-	#print(idx)
-
 	return sql
 
 def create_table(tbl_name, raw_file, cursor):

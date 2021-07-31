@@ -166,6 +166,41 @@ def import_hsag_data():
 
 	disconnect_db()
 
+# select  column_name from information_schema.columns where table_schema ='tdx'  and table_name = 'hsag'
+def get_columns_name(schema, tbl):
+	connect_db()
+	sql = "select  column_name from information_schema.columns where table_schema =" + "\'" + schema + "\'" + " and table_name = " + "\'" + tbl + "\'"
+	#print(sql)
+	column_num = cursor.execute(sql)
+	columns = cursor.fetchall()
+	#print(column_num)
+	#print(res)
+	disconnect_db()
+
+	return columns
+
 if __name__ == "__main__":
-	#print("hi")
-	import_hsag_data()
+	#import_hsag_data()
+	columns = get_columns_name('tdx', 'hsag')
+	
+	sel_sql = "select " + columns[4][0] + "," + columns[5][0] +  " from tdx.hsag" + " where " + columns[4][0] +" > 0"
+	connect_db()
+	#print(sel_sql)
+	cursor.execute(sel_sql)
+	res = cursor.fetchall()
+
+	sum = 0
+	for row in res:
+		#print(float(row[1][:-2]))
+		sum += float(row[1][:-2])
+
+	print(sum)
+	
+	ave = 0
+
+	for row in res:
+		ave += float(row[0]) * float(row[1][:-2]) / sum
+
+	print(ave)
+
+	disconnect_db()

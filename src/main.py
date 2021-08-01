@@ -4,7 +4,11 @@ from os import pipe
 import pymysql
 from pymysql import NULL, cursors
 
-raw_file = "../rawdata/沪深Ａ股20210731.txt"
+hsag_file = "../rawdata/沪深Ａ股20210731.txt"
+shanghai_main_file = "../rawdata/上证主板20210801.txt"
+shenzheng_main_file = "../rawdata/深证主板20210801.txt"
+kcb_file = "../rawdata/科创板20210801.txt"
+cyb_file = "../rawdata/创业板20210801.txt"
 
 db = NULL
 cursor = NULL
@@ -29,8 +33,8 @@ def test_pymysql():
 	db.close()
 	print("hello")
 
-def read_file(raw_file):
-	fd = open(file=raw_file, mode='r')
+def read_file(file_name):
+	fd = open(file=file_name, mode='r')
 	
 	cnt = 0
 	while cnt < 2:
@@ -110,11 +114,11 @@ def trans_line2Insertsql(line):
 			
 	return sql
 
-def create_table(tbl_name, raw_file, cursor):
+def create_table(tbl_name, file_name, cursor):
 	create_sql = "CREATE TABLE"
 	create_sql = create_sql + " " + tbl_name + " ("
 
-	fd = open(file=raw_file, mode='r')
+	fd = open(file=file_name, mode='r')
 	line = fd.readline()
 	fd.close()
 
@@ -128,7 +132,7 @@ def create_table(tbl_name, raw_file, cursor):
 	cursor.execute(drop_table_if_exists)
 	cursor.execute(create_sql)
 
-def insert_data(tbl_name, raw_file, cursor):
+def insert_data(tbl_name, file_name, cursor):
 	global table_columns_name
 
 	insert_sql_base = "INSERT INTO"
@@ -136,7 +140,7 @@ def insert_data(tbl_name, raw_file, cursor):
 	#insert_sql_base += " " + tbl_name + "(" + table_columns_name + ") " + "VALUES " + " ("
 	insert_sql_base += " " + tbl_name + " VALUES " + " ("
 
-	fd = open(file=raw_file, mode='r')
+	fd = open(file=file_name, mode='r')
 	fd.readline()
 
 	while 1:
@@ -163,12 +167,12 @@ def insert_data(tbl_name, raw_file, cursor):
 			#break
 	fd.close()
 
-def import_hsag_data():
+# (hsag_file, hsag) hsag mains 沪深A股
+def import_file_data(file_name, tbl):
 	connect_db()
 
-	# hsag mains 沪深A股
-	create_table("hsag", raw_file, cursor)
-	insert_data("hsag", raw_file, cursor)
+	create_table(tbl, file_name, cursor)
+	insert_data(tbl, file_name, cursor)
 
 	disconnect_db()
 
@@ -184,6 +188,8 @@ def get_columns_name(schema, tbl):
 	disconnect_db()
 
 	return columns
+
+# ('tdx', 'hsag') 
 def average_pe(schema, tbl):
 	columns = get_columns_name(schema, tbl)
 	
@@ -215,5 +221,34 @@ def average_pe(schema, tbl):
 
 	disconnect_db()
 
+def test_1_hsag():
+	import_file_data(hsag_file, 'hsag')
+	average_pe('tdx', 'hsag')
+
+def test_1_shanghai_main():
+	import_file_data(shanghai_main_file, 'shanghai_main')
+	average_pe('tdx', 'shanghai_main')
+
+def test_1_shenzheng_main():
+	import_file_data(shenzheng_main_file, 'shenzheng_main')
+	average_pe('tdx', 'shenzheng_main')
+
+def test_1_cyb():
+	import_file_data(cyb_file, 'cyb')
+	average_pe('tdx', 'cyb')
+
+def test_1_kcb():
+	import_file_data(kcb_file, 'kcb')
+	average_pe('tdx', 'kcb')
+
 if __name__ == "__main__":
 	average_pe('tdx', 'hsag')
+	average_pe('tdx', 'shanghai_main')
+	average_pe('tdx', 'shenzheng_main')
+	average_pe('tdx', 'cyb')
+	average_pe('tdx', 'kcb')
+	#test_1_hsag()
+	#test_1_shanghai_main()
+	#test_1_shenzheng_main()
+	#test_1_cyb()
+	#test_1_kcb()

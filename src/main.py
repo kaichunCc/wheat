@@ -46,6 +46,12 @@ def read_file(raw_file):
 
 	fd.close()
 
+def is_str_number(str):
+    if (str.split(".")[0]).isdigit() or str.isdigit() or  (str.split('-')[-1]).split(".")[-1].isdigit():
+        return True
+    else:
+        return False
+
 def remove_illegal_char(input):
 	out = ""
 
@@ -178,29 +184,36 @@ def get_columns_name(schema, tbl):
 	disconnect_db()
 
 	return columns
-
-if __name__ == "__main__":
-	#import_hsag_data()
-	columns = get_columns_name('tdx', 'hsag')
+def average_pe(schema, tbl):
+	columns = get_columns_name(schema, tbl)
 	
-	sel_sql = "select " + columns[4][0] + "," + columns[5][0] +  " from tdx.hsag" + " where " + columns[4][0] +" > 0"
+	sel_sql = "select " + columns[4][0] + "," + columns[5][0] +  " from "+ schema + '.' + tbl  #+ " where " + columns[4][0] +" > 0"
 	connect_db()
-	#print(sel_sql)
+	print(sel_sql)
 	cursor.execute(sel_sql)
 	res = cursor.fetchall()
 
 	sum = 0
-	for row in res:
-		#print(float(row[1][:-2]))
-		sum += float(row[1][:-2])
-
-	print(sum)
+	cnt = 0
+	minus_cnt = 0
+	for row in res:	
+		if is_str_number(row[1][:-2]) and is_str_number(row[0]):
+			sum += float(row[1][:-2])
+			cnt += 1
+		else:
+			minus_cnt += 1
+			#print(row[0], row[1])
+	print(cnt, minus_cnt, round(sum, 2))
 	
 	ave = 0
-
+	ave_cnt = 0
 	for row in res:
-		ave += float(row[0]) * float(row[1][:-2]) / sum
-
-	print(ave)
+		if is_str_number(row[1][:-2]) and is_str_number(row[0]):
+			ave += float(row[0]) * float(row[1][:-2]) / sum	
+			ave_cnt += 1
+	print(ave_cnt, round(ave,2))
 
 	disconnect_db()
+
+if __name__ == "__main__":
+	average_pe('tdx', 'hsag')
